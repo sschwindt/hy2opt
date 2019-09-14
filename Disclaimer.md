@@ -1,0 +1,4 @@
+DISCLAIMER
+==========
+
+No warranty is expressed or implied regarding the usefulness or completeness of the information provided by *Hy2Opt* and its documentation (wiki). References to commercial products do not imply endorsement by the Authors of *Hy2Opt*. The concepts, materials, and methods used in the algorithms and described in the wiki are for informational purposes only. The Authors have made substantial effort to ensure the accuracy of the algorithms and the wiki, but science of prediction is uncertain and the Authors shall not be held liable for calculations and/or decisions made on the basis of application of *Hy2Opt*. The information is provided "as is" and anyone who chooses to use the information is responsible for her or his own choices as to what to do with the data and the individual is responsible for the results the follow from their decisions.
