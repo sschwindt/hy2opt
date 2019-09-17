@@ -1,0 +1,11 @@
+Geospatial datasets need to be defined within a GIS application. When finished in Arc, resume by entering a value for DS water surface elevation..."
+    iwl = raw_input("Downstream water surface elevation [m] (e.g. 1003.432) -> ") #or "1003.432"
+    print ""
+    print "Values inside the parenthesis are default values. Hit enter to accept default value or update with new value by typing in value and hitting enter."
+    cell_depth = raw_input("Cell Wet/Dry Depth(0.1 m) -> ") or "0.1"
+    end_time = raw_input("End Time(2 hrs) -> ") or "2"
+    timestep = raw_input("Time Step(2.5 s) NOTE: use timestep that is 1/4 of grid size in meters -> ") or "2.5"
+    mapOutput = raw_input("Start Map Output(0 s) -> ") or "0"
+    mapOutputInterval = raw_input("Map Output Interval(600 s) -> ") or "600"
+    tsOutputInterval = raw_input(
+        "Time Series Output Interval(60 s)  -> ") or "60"

@@ -1,0 +1,5 @@
+Version: 0.1 (October 2019)
+Author: Sebastian Schwindt
+Email: sschwindt[at]ucdavis.edu
+
+Tuflow file-maker functions are inspired by leogoesger's tuflow-wf.

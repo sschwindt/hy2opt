@@ -1,0 +1,4 @@
+Name,Source,Column 1,Column 2
+INFLOW1,bc_data___event__.csv,Time,INFLOW1
+…,bc_data___event__.csv,Time,…
+DOWNSTREAM STAGE,bc_data___event__.csv,Time,DOWNSTREAM STAGE

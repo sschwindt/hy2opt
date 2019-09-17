@@ -1,0 +1,13 @@
+Define Event == 530
+	BC Event Source == __event__ | 530	
+	SET IWL == 195.304
+	Start Map Output == 19 ! Start map output at X hours
+	End Time == 20 
+End Define
+
+Define Event == 600
+	BC Event Source == __event__ | 600	
+	SET IWL == 195.55
+	Start Map Output == 19 ! Start map output at X hours
+	End Time == 20 
+End Define
