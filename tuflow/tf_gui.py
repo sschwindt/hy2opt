@@ -22,7 +22,7 @@ class TuflowTab(ModuleTab):
         self.c_interp['state'] = 'readonly'
         self.c_interp['values'] = self.get_models()
         self.c_interp.set(" -- SELECT -- ")
-        self.b_create = tk.Button(self, bg="white", text="Validate selection", command=lambda: self.validate_selection())
+        self.b_create = tk.Button(self, bg="white", text="Apply selection", command=lambda: self.validate_selection())
         self.b_create.grid(sticky=tk.EW, row=0, column=2, padx=cfg.xd, pady=cfg.yd)
 
         tk.Label(self, text="Tuflow installation directory:").grid(sticky=tk.W, row=1, column=0, padx=cfg.xd, pady=cfg.yd)
@@ -33,9 +33,9 @@ class TuflowTab(ModuleTab):
 
     def launch_wizard(self):
         try:
-            import popup_wizard as pcw
+            import popups.pop_wizard as pcw
         except:
-            showinfo("Oups ...", "Cannot find condition creation routines -  check installation.")
+            showinfo("Oups ...", "Cannot find Model Setup Wizard -  check installation.")
             return -1
         new_window = pcw.MasterWindow(self.master)
         l_temp = tk.Label(self, fg="gray50", text="WINDOW INACTIVE WHILE EXECUTING WIZARD")
@@ -46,13 +46,13 @@ class TuflowTab(ModuleTab):
         l_temp.destroy()
 
     def tf_dir_get(self):
-        return str(fGl.read_file_content(cfg.dir2tf + '/settings/tf_dir.def')[0].strip("\n"))
+        return str(fGl.read_file_content(cfg.dir2tf + 'settings/tf_dir.def')[0].strip("\n"))
 
     def tf_dir_set(self):
         self.tf_dir = askdirectory(initialdir=".") + "/"
         if not os.path.isfile(self.tf_dir + 'TUFLOW_iSP_w64.exe') and (str(sys.platform)[0:3].lower() == "win"):
             showinfo("WARNING", "Cannot locate TUFLOW_iSP_w64.exe in the defined directory.")
-        f_tf_def = cfg.dir2tf + '/settings/tf_dir.def'
+        f_tf_def = cfg.dir2tf + 'settings/tf_dir.def'
         fGl.rm_file(f_tf_def)  # safely remove existing file
         _f = open(f_tf_def, 'w')
         _f.write(self.tf_dir)
@@ -60,14 +60,13 @@ class TuflowTab(ModuleTab):
 
     def get_models(self):
         model_list = []
-        for e in fGl.list_file_type_in_dir(cfg.dir2tf + "/models/", ".hy2model"):
+        for e in fGl.list_file_type_in_dir(cfg.dir2tf + "models/", ".hy2model"):
             model_list.append(e.split("\\")[-1].split("/")[-1].split(".hy2model")[0])
-        return [" -- SELECT -- ", "RUN MODEL SETUP WIZARD"] + model_list
+        return [" -- SELECT -- ", "MODEL SETUP WIZARD"] + model_list
 
     def validate_selection(self):
         if "wizard" in str(self.c_interp.get()).lower():
-            if askyesno("Confirm", "Launch Model Setup Wizard?"):
-                self.launch_wizard()
+            self.launch_wizard()
 
     def __call__(self):
         self.mainloop()
