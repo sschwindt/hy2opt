@@ -1,28 +1,37 @@
 from cCtrl import ModelControl
+from cGeo import ModelGeoControl
+from cBCevents import ModelEvents
 from config import *
 import fileinput
 
 
-class Hy2OptModel(ModelControl):
+class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
     # name = ReadOnlyParameter("model_name")
     # model_file = ReadOnlyParameter(dir2tf + "models/model_name.hy2model")
 
     def __init__(self, model_name):
         self._name = model_name
         self._model_file = dir2tf + "models/" + model_name + ".hy2model"
+
         ModelControl.__init__(self)
+        ModelGeoControl.__init__(self)
+        ModelEvents.__init__(self)
+
         # Control par_group dicts
         self.tcf_applied_dict = {}
         self.sta_applied_dict = {}
         self.out_applied_dict = {}
         # Geo par_group dicts
-        self.geo_applied_dict = {}
+        self.tgc_applied_dict = {}
+        self.mat_applied_dict = {}
+        self.tbc_applied_dict = {}
         # BC par_group dicts
-        self.bc_applied_dict = {}
+        self.bce_applied_dict = {}
+        self.bat_applied_dict = {}
 
         self.par_dict = {"ctrl": self.tcf_applied_dict, "stab": self.sta_applied_dict, "out": self.out_applied_dict,
-                         "geo": self.geo_applied_dict,
-                         "bc": self.bc_applied_dict}
+                         "gctrl": self.tgc_applied_dict, "gmat": self.mat_applied_dict, "gbc": self.tbc_applied_dict,
+                         "bce": self.bce_applied_dict, "bat": self.bat_applied_dict}
 
         self.complete()
 
@@ -33,6 +42,16 @@ class Hy2OptModel(ModelControl):
             self.sta_applied_dict.update({k: ""})
         for k in self.map_out_dict.keys():
             self.out_applied_dict.update({k: ""})
+        for k in self.geo_tgc_dict.keys():
+            self.tgc_applied_dict.update({k: ""})
+        for k in self.geo_mat_dict.keys():
+            self.mat_applied_dict.update({k: ""})
+        for k in self.geo_tbc_dict.keys():
+            self.tbc_applied_dict.update({k: ""})
+        for k in self.event_dict.keys():
+            self.bce_applied_dict.update({k: ""})
+        for k in self.bat_dict.keys():
+            self.bat_applied_dict.update({k: ""})
 
     @property
     def model_file(self):
@@ -40,7 +59,7 @@ class Hy2OptModel(ModelControl):
 
     @model_file.setter
     def model_file(self, val):
-        raise Exception("Read-only")
+        raise Exception("Read-only: Use Hy2OpModel.set_parameter_... instead.")
 
     @property
     def name(self):
@@ -48,7 +67,7 @@ class Hy2OptModel(ModelControl):
 
     @name.setter
     def name(self, val):
-        raise Exception("Read-only")
+        raise Exception("Read-only: Use Hy2OpModel.set_parameter_... instead.")
 
     def read_model(self):
         pass
@@ -60,8 +79,8 @@ class Hy2OptModel(ModelControl):
         :param new_line_str: STR
         """
         for line in fileinput.input([self.model_file], inplace=True):
-            if line.strip().startswith('initial_mass = '):
-                line = 'initial_mass = 123\n'
+            if line.strip().startswith(search_pattern):
+                line = new_line_str
             sys.stdout.write(line)
 
     def save_model(self):
@@ -72,7 +91,6 @@ class Hy2OptModel(ModelControl):
     def set_model_name(self, model_name):
         self._name = model_name
         self._model_file = dir2tf + "models/" + model_name + ".hy2model"
-
 
     def set_usr_parameters(self, par_group, par, values):
         """
@@ -93,7 +111,8 @@ class Hy2OptModel(ModelControl):
         write_str = "{0}::{1}::".format(par_group, par)
         if os.path.isfile(self.model_file):
             if write_str in open(self.model_file).read():
-                self.replace_model_par(write_str, write_str + self.par_dict[par_group][par])
+                self.replace_model_par(write_str, write_str + self.par_dict[par_group][par] + "\n")
+                return 0
             f_model = open(self.model_file, "a+")
         else:
             f_model = open(self.model_file, "w")

@@ -3,17 +3,18 @@ try:
     from collections import Iterable  # used in the flatten function
     from bisect import bisect_left
 except:
-    print("ExceptionERROR: Missing fundamental packages (required: bisect, collections, os, sys, glob, logging, time, webbrowser).")
+    print("ImportERROR: Missing fundamental packages (required: bisect, collections, os, sys, glob, logging, time, webbrowser).")
 
 try:
     import config as cfg
 except:
-    print("ExceptionERROR: Cannot find package files (cDefinitions.py).")
+    print("ImportERROR: Cannot find Hy2Opt.pypool.config")
 
 try:
     from osgeo import ogr
 except:
-    print("WARNING: Cannot find osgeo. Geospatial functions are not be available.")
+    print("ImportWARNING: Cannot find osgeo. Geospatial functions are not be available.")
+
 
 def chk_is_empty(variable):
     try:
@@ -172,20 +173,35 @@ def get_credits():
     return credits_str
 
 
+def get_newest_file(directory):
+    return sorted(glob.iglob(os.path.join(directory, '*')), key=os.path.getctime, reverse=True)[0]
+
+
 def get_shp_extent(dir2shp):
     """
     Assesses extents of a shapefile using osgeo's ogr module
     :param dir2shp: STR of full path to shapefile (e.g., D:/a_shapefile.shp)
-    :return: TUPLE of shapefile extents (Xmin[West], Xmax[East], Ymin[South], Ymax[North])
+    :return: TUPLE of shapefile extents (INT(X_length[West-East], INT(Y_length[South-North])
     """
     driver = ogr.GetDriverByName("ESRI Shapefile")
     data_src = driver.Open(dir2shp, 0)
     layer = data_src.GetLayer()
-    return layer.GetExtent()
+    x_min, x_max, y_min, y_max = layer.GetExtent()  # returns TUPLE of shapefile extents (Xmin[West], Xmax[East], Ymin[South], Ymax[North])
+    grid_size = (round(abs(x_max-x_min)+0.4999), round(abs(y_max - y_min)+0.4999))
+    return grid_size
 
 
 def get_subdir_names(directory):
     return [name for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))]
+
+
+def get_tf_models():
+    # returns LIST of (internal) Hy2Opt.Tuflow model names
+    models = []
+    [models.append(f.split("\\")[-1].split("/")[-1].split(".hy2model")[0]) for f in list_file_type_in_dir(cfg.dir2tf + "models/", ".hy2model")]
+    if models.__len__() < 1:
+        models = ["NO MODEL AVAILABLE"]
+    return models
 
 
 def interpolate_linear(x1, x2, y1, y2, xi):
@@ -310,10 +326,12 @@ def str2num(arg, sep):
 def str2tuple(arg):
     try:
         arg = arg.split(',')
+        tt = (int(arg[0]), int(arg[1]))
+        return tt
     except ValueError:
         print('ERROR: Bad assignment of separator.\nSeparator must be [,].')
-    tup = (int(arg[0]), int(arg[1]))
-    return tup
+        return tuple()
+
 
 
 def tuple2num(arg):
