@@ -8,7 +8,7 @@ except:
     print("ERROR: Could not import pypool.")
 
 try:
-    import ctypes  # may be required to enable showing the code_icon in taskbar
+    import ctypes  # may be required to eget_model_parnable showing the code_icon in taskbar
     myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except:
@@ -17,9 +17,9 @@ except:
 
 class MasterGUI(tk.Frame):
     # master GUI for all modules
+    @cfg.log_actions
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
-        self.logger = Logger("logfile")
         self.pack()
 
         self.master.title("H2Opt")

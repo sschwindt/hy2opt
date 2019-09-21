@@ -1,6 +1,6 @@
 from cCtrl import ModelControl
 from cGeo import ModelGeoControl
-from cBCevents import ModelEvents
+from cEvents import ModelEvents
 from config import *
 import fileinput
 
@@ -12,6 +12,7 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
     def __init__(self, model_name):
         self._name = model_name
         self._model_file = dir2tf + "models/" + model_name + ".hy2model"
+        self.logger = logging.getLogger("logfile")
 
         ModelControl.__init__(self)
         ModelGeoControl.__init__(self)
@@ -27,31 +28,15 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
         self.tbc_applied_dict = {}
         # BC par_group dicts
         self.bce_applied_dict = {}
-        self.bat_applied_dict = {}
+        # self.bat_applied_dict = {}
 
         self.par_dict = {"ctrl": self.tcf_applied_dict, "stab": self.sta_applied_dict, "out": self.out_applied_dict,
                          "gctrl": self.tgc_applied_dict, "gmat": self.mat_applied_dict, "gbc": self.tbc_applied_dict,
-                         "bce": self.bce_applied_dict, "bat": self.bat_applied_dict}
-
+                         "bce": self.bce_applied_dict}
+        self.default_dicts = {"ctrl": self.tcf_dict, "stab": self.sta_dict, "out": self.map_out_dict,
+                              "gctrl": self.geo_tgc_dict, "gmat": self.geo_mat_dict, "gbc": self.geo_tbc_dict,
+                              "bce": self.event_dict}
         self.complete()
-
-    def complete(self):
-        for k in self.tcf_dict.keys():
-            self.tcf_applied_dict.update({k: ""})
-        for k in self.sta_dict.keys():
-            self.sta_applied_dict.update({k: ""})
-        for k in self.map_out_dict.keys():
-            self.out_applied_dict.update({k: ""})
-        for k in self.geo_tgc_dict.keys():
-            self.tgc_applied_dict.update({k: ""})
-        for k in self.geo_mat_dict.keys():
-            self.mat_applied_dict.update({k: ""})
-        for k in self.geo_tbc_dict.keys():
-            self.tbc_applied_dict.update({k: ""})
-        for k in self.event_dict.keys():
-            self.bce_applied_dict.update({k: ""})
-        for k in self.bat_dict.keys():
-            self.bat_applied_dict.update({k: ""})
 
     @property
     def model_file(self):
@@ -69,8 +54,46 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
     def name(self, val):
         raise Exception("Read-only: Use Hy2OpModel.set_parameter_... instead.")
 
-    def read_model(self):
-        pass
+    def complete(self):
+        for par_group, par_dict in self.default_dicts.items():
+            for par in par_dict.keys():
+                self.par_dict[par_group].update({par: ""})
+
+    @chk_osgeo
+    def get_boundary_sa_names(self):
+        dir2sa_shp = self.get_model_par("gbc", "Read GIS SA")
+        field_names = fGl.get_shp_field_names(dir2sa_shp)
+        try:
+            the_field_name = [x for x in field_names if ("name" in x.lower())][0]
+        except:
+            return "Field NAME is not defined in Read GIS SA: 2d_sa_MODEL_QT_R.shp"
+        self.bc_list = fGl.get_shp_field_values(dir2sa_shp, the_field_name)
+        return str("Added source area names: " + ", ".join(self.bc_list))
+
+    def get_model_par(self, par_group, par):
+        try:
+            for line in open(self.model_file, "r").readlines():
+                if line.strip().startswith("{0}::{1}::".format(par_group, par)):
+                    par_val_str = str(line.strip().split("::")[-1])
+                    if "," in par_val_str:
+                        return fGl.str2tuple(par_val_str)
+                    else:
+                        try:
+                            return float(par_val_str)
+                        except ValueError:
+                            return par_val_str
+            return self.default_dicts[par_group][par][0]  # else: return default value
+        except:
+            self.logger.error("Could not retrieve model value (par_group={0}, par={1})".format(str(par_group), str(par)))
+
+    def load_model(self):
+        for par_group, par_dict in self.par_dict.items():
+            for par in par_dict.keys():
+                par_dict[par] = self.get_model_par(par_group, par)
+
+    def overwrite_defaults(self, par_group):
+        for par in self.default_dicts[par_group].keys():
+            self.default_dicts[par_group][par][0] = self.get_model_par(par_group, par)
 
     def replace_model_par(self, search_pattern, new_line_str):
         """
@@ -84,9 +107,10 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
             sys.stdout.write(line)
 
     def save_model(self):
-        for k, v in self.par_dict.items():
-            for e in v.keys():
-                self.write_parameter(k, e)
+        for par_group, par_dict in self.par_dict.items():
+            for par in par_dict.keys():
+                self.write_parameter(par_group, par)
+            self.sign_model(par_group)
 
     def set_model_name(self, model_name):
         self._name = model_name
@@ -106,6 +130,19 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
             val_str = str(values[0])
         self.par_dict[par_group][par] = val_str
         self.write_parameter(par_group, par)
+
+    def sign_model(self, par_group):
+        """ Model signature that tells the model that parameters for par_group were already written once. """
+        f_model = open(self.model_file, "a+")
+        f_model.write(par_group + "::signature::True\n")
+        f_model.truncate()
+
+    def signature_verification(self, par_group):
+        if os.path.isfile(self.model_file):
+            if par_group + "::signature::True" in open(self.model_file).read():
+                return True
+            else:
+                return False
 
     def write_parameter(self, par_group, par):
         write_str = "{0}::{1}::".format(par_group, par)

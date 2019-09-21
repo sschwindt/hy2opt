@@ -1,10 +1,11 @@
 try:
     import cFrameCtrl as cFC
     import cFrameGeo as cFG
+    import cFrameEvents as cFE
     import cTFmodel as cTm
     from config import *
 except:
-    print("ImportERROR: Cannot find pool.")
+    print("ImportERROR: Cannot find pypool.")
 
 
 class Tab(tk.Frame):
@@ -32,10 +33,10 @@ class Tab(tk.Frame):
         self.b_return = tk.Button(self, fg="RoyalBlue3", bg="white", text="RETURN to MAIN WINDOW", command=lambda: self.quit_wizard())
         self.b_return.grid(sticky=tk.E, row=25, column=25, padx=xd, pady=yd)
 
-
     def assign_model_name(self):
-        if ("geo" in self.title.lower()) or ("boundary" in self.title.lower()):
+        if ("geo" in self.title.lower()) or ("event" in self.title.lower()):
             self.model_name.set(str(self.cbx_model.get()))
+            self.model.set_model_name(str(self.cbx_model.get()))
 
     def furnish(self):
         """
@@ -47,19 +48,22 @@ class Tab(tk.Frame):
             self.furnish_model_ctrl()
         if self.title == "Geometry":
             self.furnish_geometry()
-        if self.title == "Boundary Conditions (Events)":
+        if self.title == "BC Events":
             self.furnish_bc_events()
 
     def furnish_bc_events(self):
         # make frames for control, stability and output parameters and place frames
         self.place_model_cbx()
-        # tk.Label(self, text="BC Events").grid(sticky=tk.W, row=0, column=0, padx=xd, pady=yd)
+        self.assign_model_name()
+        bce_frame = cFE.EventMaker("bce", self, model_name=self.verify_model("bce"), relief=tk.RAISED)
+        self.frame_dict = {"bce": bce_frame}
 
     def furnish_geometry(self):
         self.place_model_cbx()
-        gctrl_frame = cFG.GeoMaker("gctrl", self, relief=tk.RAISED)
-        gmat_frame = cFG.GeoMaker("gmat", self, relief=tk.RAISED)
-        gbc_frame = cFG.GeoMaker("gbc", self, relief=tk.RAISED)
+        self.assign_model_name()
+        gctrl_frame = cFG.GeoMaker("gctrl", self, model_name=self.verify_model("gctrl"), relief=tk.RAISED)
+        gmat_frame = cFG.GeoMaker("gmat", self, model_name=self.verify_model("gmat"), relief=tk.RAISED)
+        gbc_frame = cFG.GeoMaker("gbc", self, model_name=self.verify_model("ggbc"), relief=tk.RAISED)
         gctrl_frame.grid(sticky=tk.EW, row=1, column=0, columnspan=3, pady=yd)
         gmat_frame.grid(sticky=tk.EW, row=2, column=0, columnspan=3, pady=yd)
         gbc_frame.grid(sticky=tk.EW, row=3, column=0, columnspan=3, pady=yd)
@@ -78,11 +82,11 @@ class Tab(tk.Frame):
         out_frame.grid(sticky=tk.EW, row=3, column=0, columnspan=3, pady=yd)
         self.frame_dict = {"ctrl": ctrl_frame, "stab": stab_frame, "out": out_frame}
 
-
     def place_model_cbx(self, refresh=False):
         if not refresh:
             self.cbx_model = ttk.Combobox(self)
             self.cbx_model.grid(sticky=tk.EW, row=0, column=1, padx=xd, pady=yd)
+            tk.Button(self, text="Refresh", command=lambda: self.reload_frames()).grid(sticky=tk.W, row=0, column=2, padx=xd, pady=yd)
         try:
             # necessary because first call will run into emptiness...
             self.cbx_model['state'] = 'readonly'
@@ -99,6 +103,11 @@ class Tab(tk.Frame):
         if answer:
             self.master.destroy()
 
+    def reload_frames(self):
+        for frame in self.frame_dict.values():
+            frame.destroy()
+        self.furnish()
+
     def save_model(self):
         self.assign_model_name()
         try:
@@ -114,6 +123,7 @@ class Tab(tk.Frame):
                             for map_k, map_v in par_frame.map_data_types.items():
                                 par_str = str(str(map_k) + " " + par).replace("All ", "")
                                 self.model.set_usr_parameters(par_group, par_str, map_v)
+                self.model.sign_model(par_group)
             self.changes_saved = True
             self.b_save.config(fg="forest green", text="Save Model (last saved: %s)" % str(datetime.datetime.now()).split(".")[0])
         except IndexError:
@@ -142,6 +152,17 @@ class Tab(tk.Frame):
             self.master.title(tab_title)
             self.master.iconbitmap(code_icon)
 
+    def verify_model(self, par_group):
+        """ Uses model signatures to verify if the par_group was already saved earlier
+        :param par_group: STR of parameter group (see cTFmodel.Hy2OptModel)
+        :return: STR of model_name if signature=True OR None if signature==False
+        """
+
+        if self.model.signature_verification(par_group):
+            return str(self.model_name.get())
+        else:
+            return None
+
     def __call__(self):
         self.mainloop()
 
@@ -165,7 +186,7 @@ class MasterWindow(object):
         # self.c_menu.add_command(label="RETURN TO MAIN WINDOW", command=partial(self.top.destroy))
 
         self.tab_container = ttk.Notebook(self.top)
-        self.tab_names = ['Model Control', 'Geometry', 'Boundary Conditions (Events)']
+        self.tab_names = ['Model Control', 'Geometry', 'BC Events']
         self.tab_list = []
         for tn in self.tab_names:
             self.tab_list.append(Tab(tn, self.tab_container))
@@ -184,8 +205,9 @@ class MasterWindow(object):
     def tab_select(self, event):
         selected_tab_name = self.tab_container.tab(self.tab_container.select(), 'text')
         self.selected_tab = self.tabs[selected_tab_name]
-        self.selected_tab.set_geometry(self.selected_tab.title)
         self.selected_tab.place_model_cbx(refresh=True)
+        self.selected_tab.set_geometry(self.selected_tab.title)
+
 
     def __call__(self, *args, **kwargs):
         self.top.mainloop()

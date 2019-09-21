@@ -1,36 +1,34 @@
 try:
-    import os, sys, datetime
+    import os, sys, datetime, logging, webbrowser
 except:
-    print("ImportERROR: Missing fundamental packages (required: os, sys, datetime).")
+    print("ImportERROR: Missing fundamental packages (required: os, sys, datetime, logging, webbrowser).")
 try:
     import fGlobal as fGl
 except:
-    print("ImportERROR: Could not import pool functions.")
+    print("ImportERROR: Could not import pypool.fGlobal")
 try:
     import tkinter as tk
     from tkinter import ttk
     from tkinter.messagebox import askokcancel, showinfo, askyesno
     from tkinter.filedialog import *
-    import webbrowser
 except:
     print("ImportERROR: Missing package: tkinter.")
 try:
     from cLogger import Logger
 except:
-    print("ImportERROR: Could not import Logger.")
+    print("ImportERROR: Could not import pypool.cLogger.Logger")
 try:
     import pyhi
 except:
-    print("ImportERROR: Could not import Welcome tab.")
+    print("ImportERROR: Could not import .pyhi")
 try:
     import tuflow
 except:
-    print("ImportERROR: Could not import Tuflow tab.")
+    print("ImportERROR: Could not import .tuflow")
 try:
     import other
 except:
-    print("ImportERROR: Could not import Other tab.")
-
+    print("ImportERROR: Could not import .other")
 
 
 def set_directories():
@@ -41,6 +39,25 @@ def set_directories():
             print('Appending import folder %s ...' % sdir)
             sys.path.append(os.path.join(mdir, sdir))
 
+
+def chk_osgeo(func):
+    def wrapper(*args, **kwargs):
+        try:
+            from osgeo import ogr
+            func(*args, **kwargs)
+        except ModuleNotFoundError:
+            showinfo("ERROR", "Install osgeo.ogr to enable this Hy2Opt feature.")
+        except ImportError:
+            showinfo("ERROR", "Install osgeo.ogr to enable this Hy2Opt feature.")
+    return wrapper
+
+
+def log_actions(func):
+    def wrapper(*args, **kwargs):
+        logger = Logger("logfile")
+        func(*args, **kwargs)
+        logger.logging_stop()
+    return wrapper
 
 dir2dialogues = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "/pyorigin/dialogues/"
 dir2master = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "\\"

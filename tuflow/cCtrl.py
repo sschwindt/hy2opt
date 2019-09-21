@@ -61,15 +61,15 @@ class ModelControl:
         self.rst_file = [".trf_file"]
         self.rst_dict = {"Read Restart File": self.rst_file}
 
-        self.section_name_dict = {"ctrl": "Model Controls",
+        self.ctrl_name_dict = {"ctrl": "Model Controls",
                                   "stab": "Stability Parameters",
                                   "out": "Output Parameters",
                                   "rst": "Restart Options (Optimization)"}
-        self.section_par_dict = {"ctrl": self.tcf_dict,
+        self.ctrl_par_dict = {"ctrl": self.tcf_dict,
                                  "stab": self.sta_dict,
                                  "out": self.map_out_dict,
                                  "rst": self.rst_dict}
-        self.section_bg_colors = {"ctrl": "light blue",
+        self.ctrl_bg_colors = {"ctrl": "light blue",
                                   "stab": "sky blue",
                                   "out": "steel blue",
                                   "rst": "SeaGreen1"}

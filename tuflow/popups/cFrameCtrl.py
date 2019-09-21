@@ -10,36 +10,36 @@ class ControlMaker(tk.Frame):
     def __init__(self, section_name, master=None, **options):
         """
         Frames parameter section inquiries as listed in cCtrl.ModelControl
-        :param section_name: STR of section name - must be oone of: "ctrl", "stab", "out", "rst"
+        :param section_name: STR of section name - must be one of: "ctrl", "stab", "out", "rst"
         :param master: tk.Frame-master
         :param options: relief, ...
         """
         Frame.__init__(self, master, **options)
         self.mctrl = cCtrl.ModelControl()
         self.sn = section_name
-        self.bg_color = self.mctrl.section_bg_colors[self.sn]
+        self.bg_color = self.mctrl.ctrl_bg_colors[self.sn]
 
-        self.config(width=ww, height=int(20*self.mctrl.section_par_dict[self.sn].keys().__len__()),
+        self.config(width=ww, height=int(20*self.mctrl.ctrl_par_dict[self.sn].keys().__len__()),
                     bg=self.bg_color)
 
-        self.l_header = tk.Label(self, text=self.mctrl.section_name_dict[self.sn].upper())
+        self.l_header = tk.Label(self, text=self.mctrl.ctrl_name_dict[self.sn].upper())
         self.l_header.grid(sticky=tk.W, row=0, column=0, columnspan=3, padx=xd, pady=yd)
         self.ls = []
         row = 1
         self.par_objects = {}  # objects (comboboxes and entries) for parameters with multiple default choices
         self.par_rows = {}  # enable identification of parameter columns to add additional buttons
-        for par in self.mctrl.section_par_dict[self.sn].keys():
+        for par in self.mctrl.ctrl_par_dict[self.sn].keys():
             self.ls.append(tk.Label(self, text=par))
             self.ls[-1].grid(sticky=tk.W, row=row, column=0, padx=xd, pady=yd)
             self.par_rows.update({par: row})
-            if self.mctrl.section_par_dict[self.sn][par].__len__() > 1:
+            if self.mctrl.ctrl_par_dict[self.sn][par].__len__() > 1:
                 self.par_objects.update({par: ttk.Combobox(self, width=30)})
                 self.par_objects[par]['state'] = 'readonly'
-                self.par_objects[par]['values'] = self.mctrl.section_par_dict[self.sn][par]
-                self.par_objects[par].set(self.mctrl.section_par_dict[self.sn][par][0])
+                self.par_objects[par]['values'] = self.mctrl.ctrl_par_dict[self.sn][par]
+                self.par_objects[par].set(self.mctrl.ctrl_par_dict[self.sn][par][0])
             else:
                 self.par_objects.update({par: tk.Entry(self, width=30)})
-                self.par_objects[par].insert(tk.END, self.mctrl.section_par_dict[self.sn][par][0])
+                self.par_objects[par].insert(tk.END, self.mctrl.ctrl_par_dict[self.sn][par][0])
             self.par_objects[par].grid(sticky=tk.E, row=row, column=1, padx=xd, pady=yd)
             row += 1
 
@@ -47,7 +47,7 @@ class ControlMaker(tk.Frame):
         self.make_up()
 
     def add(self):
-        # add additional entries as a function of section names
+        # add additional entries as a function of ctrl-section names
         if self.sn == "stab":
             self.timestep = tk.StringVar()
             self.timestep.set(self.par_objects["Timestep"].get())

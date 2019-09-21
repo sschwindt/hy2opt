@@ -25,5 +25,4 @@ class PopUpMat(object):
                                         filetypes=[('Materials', '*.csv;*xls;*xlsm;*xlsx')], parent=self.top)
 
     def cleanup(self):
-        showinfo("INFO", "Do not forget to select the materials.csv in the main window.", parent=self.top)
         self.top.destroy()

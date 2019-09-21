@@ -13,12 +13,12 @@ class ModelGeoControl:
         self.geo_rst_dict = {"Read Grid IWL": self.iwl_grid}
 
         # TGC file contents
-        self.shp2d_loc = ["."]
+        self.shp2d_loc = [""]
         self.grid_sz = [(0, 0)]
         self.set_z = [3000]
-        self.grid_z = ["."]
+        self.grid_z = [""]
         self.set_code = [0]
-        self.shp2d_code = ["."]
+        self.shp2d_code = [""]
         self.geo_tgc_dict = {"Read GIS Location": self.shp2d_loc,
                              "Grid Size": self.grid_sz,
                              "Set Zpts": self.set_z,
@@ -29,16 +29,14 @@ class ModelGeoControl:
         # MATERIALS as written to TGC
         self.set_mat = [1]
         self.csv_mat = [None]
-        self.shp2d_mat = ["."]
+        self.shp2d_mat = [""]
         self.geo_mat_dict = {"Set Mat": self.set_mat,
                              "Read Materials File": self.csv_mat,
                              "Read GIS Mat": self.shp2d_mat}
 
-
-
         # TBC file contents
-        self.shp2d_bc = ["."]
-        self.shp2d_sa = ["."]
+        self.shp2d_bc = [""]
+        self.shp2d_sa = [""]
         self.geo_tbc_dict = {"Read GIS BC": self.shp2d_bc,
                              "Read GIS SA": self.shp2d_sa}
 
@@ -53,18 +51,14 @@ class ModelGeoControl:
                                 "Read Materials File": "csv file (optional)",
                                 "Read GIS BC": "2d_bc_MODEL_HT_L.shp",
                                 "Read GIS SA": "2d_sa_MODEL_QT_R.shp"}
-        self.section_name_dict = {"gctrl": "Geometry Controls",
-                                  "gmat": "Materials",
-                                  "gbc": "Geometry Boundaries",
-                                  "rst": "Restart Options (Optimization)"}
-        self.section_par_dict = {"gctrl": self.geo_tgc_dict,
-                                 "gmat": self.geo_mat_dict,
-                                 "gbc": self.geo_tbc_dict,
-                                 "rst": self.geo_rst_dict}
-        self.section_bg_colors = {"gctrl": "light blue",
-                                  "gmat": "sky blue",
-                                  "gbc": "steel blue",
-                                  "rst": "SeaGreen1"}
+        self.geo_name_dict = {"gctrl": "Geometry Controls",
+                              "gmat": "Materials",
+                              "gbc": "Geometry Boundaries",
+                              "rst": "Restart Options (Optimization)"}
+        self.geo_bg_colors = {"gctrl": "light blue",
+                              "gmat": "sky blue",
+                              "gbc": "steel blue",
+                              "rst": "SeaGreen1"}
 
     def __call__(self, *args, **kwargs):
         print("Class Info: <type> = ModelGeoControl (%s)" % os.path.dirname(__file__))

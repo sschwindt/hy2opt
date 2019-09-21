@@ -13,9 +13,20 @@ except:
 try:
     from osgeo import ogr
 except:
-    print("ImportWARNING: Cannot find osgeo. Geospatial functions are not be available.")
+    print("ImportWARNING: Cannot find osgeo.ogr - geospatial functions are not be available.")
 
 
+# FUNCTION WRAPPERS - MUST BE ON TOP OF THE FILE
+def ogr_shp_env(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            print("ERROR: osgeo.ogr not available.")
+    return wrapper
+
+
+# MAIN FUNCTIONS
 def chk_is_empty(variable):
     try:
         value = float(variable)
@@ -110,31 +121,6 @@ def dict2str(dictionary, **kwargs):
     return dict_str
 
 
-def eliminate_nan_from_list(base_list, *args):
-    # eliminates nan values from a list and all other lists provided with *args
-    partner_lists = []
-    try:
-        for partner_list in args:
-            partner_lists.append(partner_list)
-    except:
-        pass
-
-    for val in base_list:
-        try:
-            test = float(val)  # goes to except if try failes
-        except:
-            while val in base_list:
-                rem_index = base_list.index(val)
-                del base_list[rem_index]
-                try:
-                    for partner_list in partner_lists:
-                        del partner_list[rem_index]
-                except:
-                    pass
-    partner_lists.insert(0, base_list)
-    return partner_lists
-
-
 def file_names_in_dir(directory):
     # returns file names only (without directory)
     return [name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))]
@@ -177,6 +163,7 @@ def get_newest_file(directory):
     return sorted(glob.iglob(os.path.join(directory, '*')), key=os.path.getctime, reverse=True)[0]
 
 
+@ogr_shp_env
 def get_shp_extent(dir2shp):
     """
     Assesses extents of a shapefile using osgeo's ogr module
@@ -189,6 +176,27 @@ def get_shp_extent(dir2shp):
     x_min, x_max, y_min, y_max = layer.GetExtent()  # returns TUPLE of shapefile extents (Xmin[West], Xmax[East], Ymin[South], Ymax[North])
     grid_size = (round(abs(x_max-x_min)+0.4999), round(abs(y_max - y_min)+0.4999))
     return grid_size
+
+
+@ogr_shp_env
+def get_shp_field_names(dir2shp):
+    driver = ogr.GetDriverByName("ESRI Shapefile")
+    data_src = driver.Open(dir2shp, 0)
+    layer = data_src.GetLayer()
+    ldefn = layer.GetLayerDefn()
+    field_names = []
+    [field_names.append(ldefn.GetFieldDefn(n).name) for n in range(ldefn.GetFieldCount())]
+    return field_names
+
+
+@ogr_shp_env
+def get_shp_field_values(dir2shp, field_name):
+    driver = ogr.GetDriverByName("ESRI Shapefile")
+    data_src = driver.Open(dir2shp, 0)
+    layer = data_src.GetLayer()
+    field_values = []
+    [field_values.append(feat.GetField(field_name)) for feat in layer]
+    return field_values
 
 
 def get_subdir_names(directory):
@@ -215,19 +223,6 @@ def list_file_type_in_dir(directory, f_ending):
     :param f_ending: STR, e.g., ".py"
     :return: LIST of full file paths"""
     return glob.glob(directory + "*" + f_ending)
-
-
-def open_file(full_file_path):
-    _f = full_file_path
-    if os.path.isfile(_f):
-        try:
-            webbrowser.open(_f)
-            msg = ""
-        except:
-            msg = "Cannot open " + str(_f) + ". Ensure that your OS has a defined standard application for relevant file types (e.g., .inp or .xlsx)."
-    else:
-        msg = "The file \'\n" + str(_f) + "\'\n does not exist. Check MaxLifespan directory."
-    return msg
 
 
 def open_folder(directory):
@@ -330,8 +325,7 @@ def str2tuple(arg):
         return tt
     except ValueError:
         print('ERROR: Bad assignment of separator.\nSeparator must be [,].')
-        return tuple()
-
+        return arg
 
 
 def tuple2num(arg):
