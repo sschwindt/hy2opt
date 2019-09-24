@@ -56,6 +56,7 @@ class Tab(tk.Frame):
         self.place_model_cbx()
         self.assign_model_name()
         bce_frame = cFE.EventMaker("bce", self, model_name=self.verify_model("bce"), relief=tk.RAISED)
+        bce_frame.grid(sticky=tk.EW, row=1, column=0, columnspan=3, pady=yd)
         self.frame_dict = {"bce": bce_frame}
 
     def furnish_geometry(self):
@@ -63,7 +64,7 @@ class Tab(tk.Frame):
         self.assign_model_name()
         gctrl_frame = cFG.GeoMaker("gctrl", self, model_name=self.verify_model("gctrl"), relief=tk.RAISED)
         gmat_frame = cFG.GeoMaker("gmat", self, model_name=self.verify_model("gmat"), relief=tk.RAISED)
-        gbc_frame = cFG.GeoMaker("gbc", self, model_name=self.verify_model("ggbc"), relief=tk.RAISED)
+        gbc_frame = cFG.GeoMaker("gbc", self, model_name=self.verify_model("gbc"), relief=tk.RAISED)
         gctrl_frame.grid(sticky=tk.EW, row=1, column=0, columnspan=3, pady=yd)
         gmat_frame.grid(sticky=tk.EW, row=2, column=0, columnspan=3, pady=yd)
         gbc_frame.grid(sticky=tk.EW, row=3, column=0, columnspan=3, pady=yd)
@@ -91,12 +92,13 @@ class Tab(tk.Frame):
             # necessary because first call will run into emptiness...
             self.cbx_model['state'] = 'readonly'
             self.cbx_model['values'] = fGl.get_tf_models()
-            try:
-                self.cbx_model.set(fGl.get_newest_file(dir2tf + "models/").split("\\")[-1].split("/")[-1].split(".hy2model")[0])
-            except:
-                self.cbx_model.set("NO MODEL AVAILABLE")
         except AttributeError:
-            pass
+            return ""
+        try:
+            self.cbx_model.set(
+                fGl.get_newest_file(dir2tf + "models/").split("\\")[-1].split("/")[-1].split(".hy2model")[0])
+        except:
+            self.cbx_model.set("NO MODEL AVAILABLE")
 
     def quit_wizard(self):
         answer = askyesno("Quit?", "Make sure to SAVE MODEL settings. Return to main window?")
@@ -142,8 +144,8 @@ class Tab(tk.Frame):
         # ww and wh = INT of window width and window height
         # Upper-left corner of the window.
         self.title = tab_title
-        wx = (self.master.winfo_screenwidth() - ww) / 2
-        wy = (self.master.winfo_screenheight() - wh) / 2
+        wx = int((self.master.winfo_screenwidth() - ww) / 3)
+        wy = int((self.master.winfo_screenheight() - wh) / 3)
         # Set the height and location.
         self.master.geometry("%dx%d+%d+%d" % (ww, wh, wx, wy))
         self.furnish()
@@ -173,17 +175,11 @@ class MasterWindow(object):
         self.top.iconbitmap(code_icon)
 
         # ARRANGE GEOMETRY
-        wx = (self.top.winfo_screenwidth() - ww) / 2
-        wy = (self.top.winfo_screenheight() - wh) / 2
+        wx = int((self.top.winfo_screenwidth() - ww) / 3)
+        wy = int((self.top.winfo_screenheight() - wh) / 3)
         self.top.geometry("%dx%d+%d+%d" % (ww, wh, wx, wy))
         self.top.title("Tuflow Model Setup Wizard")  # window title
         self.top.lift()
-        # self.top.attributes("-topmost", True)
-        # self.mbar = tk.Menu(top)
-        # self.top.config(menu=self.mbar)
-        # self.c_menu = tk.Menu(self.mbar, tearoff=0)
-        # self.mbar.add_cascade(label="RETURN", menu=self.c_menu)  # attach it to the menubar
-        # self.c_menu.add_command(label="RETURN TO MAIN WINDOW", command=partial(self.top.destroy))
 
         self.tab_container = ttk.Notebook(self.top)
         self.tab_names = ['Model Control', 'Geometry', 'BC Events']
@@ -200,14 +196,12 @@ class MasterWindow(object):
                      lambda event: event.widget.winfo_children()[event.widget.index("current")].update())  # preserve user entries
             self.tab_container.add(tab, text=tab_name)
             self.tab_container.pack(expand=1, fill="both")
-        # self.selected_tab = self.tabs["Model Control"]  # initial tab
 
     def tab_select(self, event):
         selected_tab_name = self.tab_container.tab(self.tab_container.select(), 'text')
         self.selected_tab = self.tabs[selected_tab_name]
         self.selected_tab.place_model_cbx(refresh=True)
         self.selected_tab.set_geometry(self.selected_tab.title)
-
 
     def __call__(self, *args, **kwargs):
         self.top.mainloop()

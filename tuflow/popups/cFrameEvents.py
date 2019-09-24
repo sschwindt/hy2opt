@@ -23,28 +23,14 @@ class EventMaker(tk.Frame):
             self.mbce.overwrite_defaults(section_name)
         self.sn = section_name
         self.bg_color = self.mbce.bce_bg_colors[self.sn]
-        self.config(width=ww, height=int(20 * self.mbce.default_dicts[self.sn].keys().__len__()),
-                    bg=self.bg_color)
-
+        self.config(width=ww, height=int(20 * self.mbce.default_dicts[self.sn].keys().__len__()), bg=self.bg_color)
         tk.Label(self, text=self.mbce.bce_name_dict[self.sn].upper()).grid(sticky=tk.W, row=0, column=0, columnspan=3, padx=xd, pady=yd)
-        if not model_name:
-            usr_msg = "ERROR\n\nDefine and select a model. The definition of events requires the prior definition of a mode with a 2d_loc_MODEL_L.shp file (Geometry Tab)."
-        else:
-            usr_msg = self.mbce.get_boundary_sa_names(model_name)
 
-        ### IMPLEMENT LOAD FUNCTION TO SHOW THIS
-        # showinfo("INFO", usr_msg, parent=self)
+        usr_msg, fg_col = self.chk_model()
+        self.l_model_check = tk.Label(self, fg=fg_col, width=100, text=usr_msg)
+        self.l_model_check.grid(sticky=tk.W, row=1, column=0, columnspan=3, padx=xd, pady=yd)
 
-        ### ADD tkintertable HERE (siehe spielwiese 1)
-
-        # OLD -----------------
-        self.ls = []
-        row = 1
-        self.par_objects = {}  # objects (comboboxes and entries) for parameters with multiple default choices
-        self.par_rows = {}  # enable identification of parameter columns to add additional buttons
-        for par in self.mbce.default_dicts[self.sn].keys():
-            pass
-            row += 1
+        self.make_table()
 
         self.add()
         self.make_up()
@@ -54,6 +40,26 @@ class EventMaker(tk.Frame):
         if self.sn == "bce":
             pass
 
+    def chk_model(self):
+        if not (self.mbce.name == "default"):
+            msg0 = "Define events for boundary source areas (define in Name-field of 2d_sa_MODEL_QT_R.shp).\n"
+            self.mbce.get_boundary_sa_names()
+            msg1 = str("Identified source area names: " + ", ".join(self.mbce.bc_list))
+            return msg0 + msg1, "forest green"
+        else:
+            msg0 = "NOT AVAILABLE\n\nDefine and select a model.\n"
+            msg1 = "Event definitions require the prior definition of a mode with a 2d_sa_MODEL_QT_R.shp file (Geometry Tab)."
+            return msg0 + msg1, "red3"
+
+    def make_table(self):
+        data = {"Model": {}}
+        for col_name in self.mbce.bc_list:
+            data["Model"].update({col_name: 0.0})
+
+        self.table_frame = Frame(self, width=700)
+        self.table_frame.grid(sticky=tk.EW, row=2, column=0, columnspan=3, padx=xd, pady=yd)
+        table = TableCanvas(self.table_frame, data=data)
+        table.show()
 
     def make_up(self):
         for wid in self.winfo_children():

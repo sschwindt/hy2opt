@@ -16,16 +16,13 @@ class GeoMaker(tk.Frame):
         :param options: relief, ...
         """
         Frame.__init__(self, master, **options)
-
         if not model_name:
             self.mgeo = cTFmodel.Hy2OptModel("default")
         else:
             self.mgeo = cTFmodel.Hy2OptModel(model_name)
             self.mgeo.overwrite_defaults(section_name)
-
         self.sn = section_name
         self.bg_color = self.mgeo.geo_bg_colors[self.sn]
-
         self.config(width=ww, height=int(20 * self.mgeo.default_dicts[self.sn].keys().__len__()), bg=self.bg_color)
 
         self.l_header = tk.Label(self, text=self.mgeo.geo_name_dict[self.sn].upper())
@@ -83,8 +80,7 @@ class GeoMaker(tk.Frame):
                 self.mgeo.default_dicts["gctrl"]["Grid Size"][0] = fGl.get_shp_extent(shp_file)
                 self.par_objects["Grid Size"].delete(0, 'end')
                 self.par_objects["Grid Size"].insert(tk.END,
-                                                     str(self.mgeo.default_dicts["gctrl"]["Grid Size"][0]).strip(
-                                                         "()"))
+                                                     str(self.mgeo.default_dicts["gctrl"]["Grid Size"][0]).strip("()"))
             except:
                 showinfo("ERROR",
                          "Grid Size calculation failed. Verify shapefile for Read GIS Location or enter manually.",
