@@ -12,9 +12,11 @@ class ModelEvents:
 
         # TEF file contents
         self.bc_list = []  # will be read from 2d_sa_MODEL_QT_R.shp
-        self.events = [""]
-        self.event_dict = {"Flow1": self.events}
-        self.event_desc = {"Flow1": "Steady XXX CMS discharge"}
+        self.sa_dict = {"EVENT": "Event name"}
+        self.event_0 = 1
+        self.event_file = [""]
+        self.events = {self.event_0: self.sa_dict}
+        # self.event_desc = {"Flow1": "Steady XXX CMS discharge"}
 
         # BAT file contents
         # self.bat_opts = []

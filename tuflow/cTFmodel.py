@@ -35,7 +35,7 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
                          "bce": self.bce_applied_dict}
         self.default_dicts = {"ctrl": self.tcf_dict, "stab": self.sta_dict, "out": self.map_out_dict,
                               "gctrl": self.geo_tgc_dict, "gmat": self.geo_mat_dict, "gbc": self.geo_tbc_dict,
-                              "bce": self.event_dict}
+                              "bce": self.events}
         self.complete()
 
     @property
@@ -67,8 +67,15 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
             the_field_name = [x for x in field_names if ("name" in x.lower())][0]
         except:
             return "Field NAME is not defined in Read GIS SA: 2d_sa_MODEL_QT_R.shp"
-        self.bc_list = fGl.get_shp_field_values(dir2sa_shp, the_field_name)
-        return str("Added source area names: " + ", ".join(self.bc_list))
+        bc_list = fGl.get_shp_field_values(dir2sa_shp, the_field_name)
+        for sa in bc_list:
+            self.events[self.event_0].update({sa: 0.0})
+        self.event_file = [self.name + ".events"]
+        try:
+            # events-dict is initiated with a 0-None entry that needs to be removed
+            del self.events[self.event_0][0]
+        except:
+            pass
 
     def get_model_par(self, par_group, par):
         try:
@@ -92,8 +99,9 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
                 par_dict[par] = self.get_model_par(par_group, par)
 
     def overwrite_defaults(self, par_group):
-        for par in self.default_dicts[par_group].keys():
-            self.default_dicts[par_group][par][0] = self.get_model_par(par_group, par)
+        if os.path.isfile(self.model_file):
+            for par in self.default_dicts[par_group].keys():
+                self.default_dicts[par_group][par][0] = self.get_model_par(par_group, par)
 
     def replace_model_par(self, search_pattern, new_line_str):
         """
@@ -134,15 +142,18 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
     def sign_model(self, par_group):
         """ Model signature that tells the model that parameters for par_group were already written once. """
         f_model = open(self.model_file, "a+")
-        f_model.write(par_group + "::signature::True\n")
-        f_model.truncate()
+        if not (par_group + "::signature::True" in open(self.model_file).read()):
+            f_model.write(par_group + "::signature::True\n")
+            f_model.truncate()
 
     def signature_verification(self, par_group):
         if os.path.isfile(self.model_file):
             if par_group + "::signature::True" in open(self.model_file).read():
                 return True
             else:
-                return False
+                if (par_group == "bce") and ("gbc::signature::True" in open(self.model_file).read()):
+                    return True
+        return False  # all other ...
 
     def write_parameter(self, par_group, par):
         write_str = "{0}::{1}::".format(par_group, par)

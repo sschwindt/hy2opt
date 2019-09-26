@@ -96,7 +96,7 @@ class Tab(tk.Frame):
             return ""
         try:
             self.cbx_model.set(
-                fGl.get_newest_file(dir2tf + "models/").split("\\")[-1].split("/")[-1].split(".hy2model")[0])
+                fGl.get_newest_file(dir2tf + "models/", exclude="event").split("\\")[-1].split("/")[-1].split(".hy2model")[0])
         except:
             self.cbx_model.set("NO MODEL AVAILABLE")
 
@@ -116,7 +116,7 @@ class Tab(tk.Frame):
             self.model.set_model_name(str(self.model_name.get()))
             for par_group, par_frame in self.frame_dict.items():
                 for par, val in par_frame.par_objects.items():
-                    if not (("Map" in par) and (("Format" in par) or ("Data" in par))):
+                    if not (("Map" in par) and (("Format" in par) or ("Data" in par)) or ("Events" in par)):
                         self.model.set_usr_parameters(par_group, par, [str(val.get())])
                     else:
                         if "Format" in par:
@@ -125,6 +125,9 @@ class Tab(tk.Frame):
                             for map_k, map_v in par_frame.map_data_types.items():
                                 par_str = str(str(map_k) + " " + par).replace("All ", "")
                                 self.model.set_usr_parameters(par_group, par_str, map_v)
+                        if "Events" in par:
+                            self.model.set_usr_parameters(par_group, par, val)
+                            par_frame.save_event_file()
                 self.model.sign_model(par_group)
             self.changes_saved = True
             self.b_save.config(fg="forest green", text="Save Model (last saved: %s)" % str(datetime.datetime.now()).split(".")[0])

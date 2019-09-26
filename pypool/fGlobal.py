@@ -121,6 +121,50 @@ def dict2str(dictionary, **kwargs):
     return dict_str
 
 
+def dict_read_from_file(filename, sep=","):
+    with open(filename, "r") as f:
+        dictionary = {}
+        for line in f:
+            values = line.split(sep)
+            dictionary[values[0]] = {int(x) for x in values[1:len(values)]}
+        return dictionary
+
+
+def dict_nested_read_from_file(filename, sep="::"):
+    dictionary = {}
+    with open(filename, "r") as f:
+        for line in f:
+            values = line.strip("\n").split(sep)
+            try:
+                dictionary[values[0]].update({values[1]: values[2]})
+            except KeyError:
+                dictionary.update({values[0]: {values[1]: values[2]}})
+    try:
+        del dictionary[0]  # remove none element
+    except:
+        pass
+    return dictionary
+
+
+def dict_write2file(dictionary, filename, sep=","):
+    with open(filename, "a") as f:
+        for i in dictionary.keys():
+            f.write(str(i) + " " + sep.join([str(x) for x in dictionary[i]]) + "\n")
+
+
+def dict_nested_write2file(dictionary, filename, sep="::"):
+    """
+    Saves a nested dictionary to filename
+    :param dictionary: dict[dict]
+    :param filename: STR
+    :param sep: STR (optional)
+    """
+    with open(filename, "w") as f:
+        for top_key, sub_dict in dictionary.items():
+            for sub_key, sub_val in sub_dict.items():
+                f.write(str(top_key) + sep + str(sub_key) + sep + str(sub_val) + "\n")
+
+
 def file_names_in_dir(directory):
     # returns file names only (without directory)
     return [name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))]
@@ -159,8 +203,20 @@ def get_credits():
     return credits_str
 
 
-def get_newest_file(directory):
-    return sorted(glob.iglob(os.path.join(directory, '*')), key=os.path.getctime, reverse=True)[0]
+def get_newest_file(directory, exclude=None):
+    """
+    Finds the newest file name, excluding those that contain an "exclude" expression
+    :param directory: STR of directory
+    :param exclude: STR of filetypes to exclude, e.g., ".txt"
+    :return: STR of newest file names
+    """
+    file_list = sorted(glob.iglob(os.path.join(directory, '*')), key=os.path.getctime, reverse=True)
+    if exclude:
+        for i in file_list:
+            if str(exclude) in str(i):
+                file_list.remove(i)
+
+    return file_list[0]
 
 
 @ogr_shp_env

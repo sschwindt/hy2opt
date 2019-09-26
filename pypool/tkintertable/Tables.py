@@ -872,7 +872,7 @@ class TableCanvas(Canvas):
         return
 
     def gotoprevRow(self):
-        """Programmatically set previous row - eg. for button events"""
+        """Programmatically set previous row - eg. for button sa_dict"""
         self.clearSelected()
         current = self.getSelectedRow()
         self.setSelectedRow(current-1)
@@ -889,7 +889,7 @@ class TableCanvas(Canvas):
         return
 
     def gotonextRow(self):
-        """Programmatically set next row - eg. for button events"""
+        """Programmatically set next row - eg. for button sa_dict"""
         self.clearSelected()
         current = self.getSelectedRow()
         self.setSelectedRow(current+1)
