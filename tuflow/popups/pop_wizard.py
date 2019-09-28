@@ -184,6 +184,14 @@ class MasterWindow(object):
         self.top.title("Tuflow Model Setup Wizard")  # window title
         self.top.lift()
 
+        self.mbar = tk.Menu(self.top)  # create new menubar
+        self.top.config(menu=self.mbar)  # attach it to the root window
+
+        # CLOSE DROP DOWN
+        self.gmenu = tk.Menu(self.mbar, tearoff=0)  # create new menu
+        self.mbar.add_cascade(label="Generate Model", menu=self.gmenu)  # attach it to the menubar
+        self.gmenu.add_command(label="Default", command=lambda: self.generate_model())  # replace with partial function
+
         self.tab_container = ttk.Notebook(self.top)
         self.tab_names = ['Model Control', 'Geometry', 'BC Events']
         self.tab_list = []
@@ -199,6 +207,12 @@ class MasterWindow(object):
                      lambda event: event.widget.winfo_children()[event.widget.index("current")].update())  # preserve user entries
             self.tab_container.add(tab, text=tab_name)
             self.tab_container.pack(expand=1, fill="both")
+
+    def generate_model(self, model_name=None):
+        pass
+
+    def update_model_menu(self):
+        pass
 
     def tab_select(self, event):
         selected_tab_name = self.tab_container.tab(self.tab_container.select(), 'text')
