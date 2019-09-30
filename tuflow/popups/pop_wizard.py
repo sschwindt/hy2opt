@@ -3,6 +3,7 @@ try:
     import cFrameGeo as cFG
     import cFrameEvents as cFE
     import cTFmodel as cTm
+    from functools import partial
     from config import *
 except:
     print("ImportERROR: Cannot find pypool.")
@@ -188,9 +189,9 @@ class MasterWindow(object):
         self.top.config(menu=self.mbar)  # attach it to the root window
 
         # CLOSE DROP DOWN
-        self.gmenu = tk.Menu(self.mbar, tearoff=0)  # create new menu
+        self.gmenu = tk.Menu(self.mbar, tearoff=0, postcommand=self.update_model_menu)  # create new menu
         self.mbar.add_cascade(label="Generate Model", menu=self.gmenu)  # attach it to the menubar
-        self.gmenu.add_command(label="Default", command=lambda: self.generate_model())  # replace with partial function
+        # self.gmenu.add_command(label="Default", command=lambda: self.generate_model())  # replace with partial function
 
         self.tab_container = ttk.Notebook(self.top)
         self.tab_names = ['Model Control', 'Geometry', 'BC Events']
@@ -209,10 +210,18 @@ class MasterWindow(object):
             self.tab_container.pack(expand=1, fill="both")
 
     def generate_model(self, model_name=None):
-        pass
+        print("Model: %s" % str(model_name))
 
     def update_model_menu(self):
-        pass
+        models = fGl.get_tf_models()
+        for i in range(0, 100):
+            # remove old items
+            try:
+                self.gmenu.delete(0, i)
+            except:
+                pass
+        for m in models:
+            self.gmenu.add_command(label=m, command=partial(self.generate_model, m))
 
     def tab_select(self, event):
         selected_tab_name = self.tab_container.tab(self.tab_container.select(), 'text')
