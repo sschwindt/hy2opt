@@ -1,9 +1,8 @@
 try:
     import sys, os
     sys.path.append(os.path.dirname(__file__) + "\\pypool\\")
-    import config as cfg
-    cfg.set_directories()
     from config import *
+    set_directories()
 except:
     print("ERROR: Could not import pypool.")
 
@@ -17,13 +16,13 @@ except:
 
 class MasterGUI(tk.Frame):
     # master GUI for all modules
-    @cfg.log_actions
+    @log_actions
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.pack()
 
         self.master.title("H2Opt")
-        self.master.iconbitmap(cfg.code_icon)
+        self.master.iconbitmap(code_icon)
 
         self.tab_container = ttk.Notebook(master)
 
