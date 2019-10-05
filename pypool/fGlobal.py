@@ -63,6 +63,21 @@ def clean_dir(directory):
             os.rmdir(os.path.join(root, name))
 
 
+def copy_tree(source_directory, target_directory):
+    """
+    Copies all files and folder from source_directory to target directory
+    :param source_directory: STR of full path of source directory - must END WITH "/"
+    :param target_directory: STR of full path of target directory - must END WITH "/"
+    :return: None
+    """
+    chk_dir(target_directory)
+    for dirpath, dirnames, filenames in os.walk(source_directory):
+        structure = os.path.join(target_directory, dirpath[len(source_directory):])
+        if not os.path.isdir(structure):
+            os.mkdir(structure)
+        else:
+            print("Manual overwrite?")
+
 def cool_down(seconds):
     # Pauses script execution for the input argument number of seconds
     # seconds = INT

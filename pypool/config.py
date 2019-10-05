@@ -66,6 +66,7 @@ dir2tf = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "/tufl
 # software_ids = ["tf"]
 # software_names = ["Tuflow"]
 # software_dict = dict(zip(software_ids, software_names))
+tf_source_tree = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "/pyorigin/tf_tree/"
 
 
 # sqft2ac = float(1 / 43560)

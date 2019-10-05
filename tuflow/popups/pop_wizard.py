@@ -191,7 +191,6 @@ class MasterWindow(object):
         # CLOSE DROP DOWN
         self.gmenu = tk.Menu(self.mbar, tearoff=0, postcommand=self.update_model_menu)  # create new menu
         self.mbar.add_cascade(label="Generate Model", menu=self.gmenu)  # attach it to the menubar
-        # self.gmenu.add_command(label="Default", command=lambda: self.generate_model())  # replace with partial function
 
         self.tab_container = ttk.Notebook(self.top)
         self.tab_names = ['Model Control', 'Geometry', 'BC Events']
@@ -210,7 +209,8 @@ class MasterWindow(object):
             self.tab_container.pack(expand=1, fill="both")
 
     def generate_model(self, model_name=None):
-        print("Model: %s" % str(model_name))
+        fGl.copy_tree(tf_source_tree, dir2tf + "user_models/" + str(model_name) + "/")
+        print("Model tree generated: %s" % str(dir2tf + "user_models/" + str(model_name)))
 
     def update_model_menu(self):
         models = fGl.get_tf_models()
