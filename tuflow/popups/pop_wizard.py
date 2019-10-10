@@ -209,7 +209,7 @@ class MasterWindow(object):
             self.tab_container.pack(expand=1, fill="both")
 
     def generate_model(self, model_name=None):
-        fGl.copy_tree(tf_source_tree, dir2tf + "user_models/" + str(model_name) + "/")
+        tf_model = cTm.Hy2OptModel(model_name)
         print("Model tree generated: %s" % str(dir2tf + "user_models/" + str(model_name)))
 
     def update_model_menu(self):

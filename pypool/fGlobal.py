@@ -68,15 +68,17 @@ def copy_tree(source_directory, target_directory):
     Copies all files and folder from source_directory to target directory
     :param source_directory: STR of full path of source directory - must END WITH "/"
     :param target_directory: STR of full path of target directory - must END WITH "/"
-    :return: None
+    :return: BOOL: False if new model, True if model already exists
     """
-    chk_dir(target_directory)
+    exists = chk_dir(target_directory)
     for dirpath, dirnames, filenames in os.walk(source_directory):
         structure = os.path.join(target_directory, dirpath[len(source_directory):])
         if not os.path.isdir(structure):
             os.mkdir(structure)
         else:
             print("Manual overwrite?")
+    return exists
+
 
 def cool_down(seconds):
     # Pauses script execution for the input argument number of seconds
@@ -155,8 +157,8 @@ def dict_nested_read_from_file(filename, sep="::"):
             except KeyError:
                 dictionary.update({values[0]: {values[1]: values[2]}})
     try:
-        del dictionary[0]  # remove none element
-    except:
+        del dictionary[0]  # remove none element if exists
+    except KeyError:
         pass
     return dictionary
 

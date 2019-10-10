@@ -59,6 +59,83 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
             for par in par_dict.keys():
                 self.par_dict[par_group].update({par: ""})
 
+    def export_as_tf(self):
+        msg = []
+        # retrieve model values
+        self.get_boundary_sa_names()
+        self.load_model()
+        if os.path.isfile(dir2tf + "models/" + self.event_file[0]):
+            self.events = fGl.dict_nested_read_from_file(dir2tf + "models/" + self.event_file[0])
+        else:
+            msg.append("WARNING: No events defined.")
+
+        # Write Tuflow model files
+        new = fGl.copy_tree(tf_source_tree, dir2tf + "user_models/" + str(self._name) + "/")
+        msg.append(self.export_bce())
+        msg.append(self.export_bcm())
+        msg.append(self.export_tgc())
+        msg.append(self.export_tbc())
+        msg.append(self.export_mat())
+
+
+    def export_bce(self):
+        for e, e_defs in self.events.items():
+            bce_file_name = dir2tf + "user_models/" + self._name + "/bc_dbase/2d_bc_" + str(e) + ".csv"
+            if os.path.isfile(bce_file_name):
+                fGl.rm_file(bce_file_name)
+            try:
+                bce_file = open(bce_file_name, "w")
+            except:
+                return "ERROR: Close " + bce_file_name + " an re-run model generator."
+            bce_file.write("Name,Source,Column 1,Column 2\n")
+            for sa in e_defs.keys():
+                bce_file.write("{0},{1}_bc_data.csv,Time,{0}\n".format(sa, self._name))
+            bce_file.truncate()
+        return "2d_bc_EVENT files created"
+
+    def export_bcm(self):
+        mbc_file_name = dir2tf + "user_models/{0}/bc_dbase/{0}_bc_data.csv".format(self._name)
+        if os.path.isfile(mbc_file_name):
+            fGl.rm_file(mbc_file_name)
+        try:
+            bcm_file = open(mbc_file_name, "w")
+        except:
+            return "ERROR: Close " + mbc_file_name + " an re-run model generator."
+        bcm_file.write("Time")
+        for e_defs in self.events.values():
+            for sa in e_defs.keys():
+                bcm_file.write("," + str(sa))
+            nl = "\n"
+            for sa_values in e_defs.values():
+                bcm_file.write(",".join([nl+str(v) for v in sa_values]))
+        bcm_file.truncate()
+        return str(self._name + "_bc_data files created")
+
+    def export_tbc(self):
+        tbc_file_name = dir2tf + "user_models/{0}/model/{0}.tbc".format(self._name)
+        if os.path.isfile(tbc_file_name):
+            fGl.rm_file(tbc_file_name)
+        tbc_file = open(tbc_file_name, "w")
+        for par, val in self.par_dict["gbc"]:
+            val = self.par2tf_path(par, val)
+            tbc_file.write("{0} == {1}\n".format(par, val))
+        tbc_file.truncate()
+        return str(self._name + ".tbc file created")
+
+    def export_tgc(self):
+        tgc_file_name = dir2tf + "user_models/{0}/model/{0}.tgc".format(self._name)
+        if os.path.isfile(tgc_file_name):
+            fGl.rm_file(tgc_file_name)
+        tgc_file = open(tgc_file_name, "w")
+        for par, val in self.par_dict["gctrl"]:
+            val = self.par2tf_path(par, val)
+            tgc_file.write("{0} == {1}\n".format(par, val))
+        for par, val in self.par_dict["gmat"]:
+            val = self.par2tf_path(par, val)
+            tgc_file.write("{0} == {1}\n".format(par, val))
+        tgc_file.truncate()
+        return str(self._name + ".tgc file created")
+
     @chk_osgeo
     def get_boundary_sa_names(self):
         dir2sa_shp = self.get_model_par("gbc", "Read GIS SA")
@@ -102,6 +179,20 @@ class Hy2OptModel(ModelControl, ModelGeoControl, ModelEvents):
         if os.path.isfile(self.model_file):
             for par in self.default_dicts[par_group].keys():
                 self.default_dicts[par_group][par][0] = self.get_model_par(par_group, par)
+
+    def par2tf_path(self, par, val):
+        par = str(par)
+        i_val = str(val)
+        if "Read Materials File" in par:
+            i_val = "..\\model\\" + i_val.split("\\")[-1].split('/')[-1]
+        if i_val.endswith(".shp"):
+            i_val = "..\\model\\gis\\" + i_val.split("\\")[-1].split('/')[-1]
+        if i_val.endswith(".asc") or i_val.endswith(".flt"):
+            i_val = "..\\model\\grid\\" + i_val.split("\\")[-1].split('/')[-1]
+        file_target = dir2tf + "user_models" + i_val.strip(".")
+        if not os.path.isfile(file_target):
+            shutil.copyfile(val, file_target)
+        return i_val
 
     def replace_model_par(self, search_pattern, new_line_str):
         """

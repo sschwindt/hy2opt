@@ -47,7 +47,6 @@ class EventMaker(tk.Frame):
         tk.Button(self, text="Delete event\n(row) No:", command=lambda: self.del_row()).grid(sticky=tk.EW, row=3, column=3, padx=xd, pady=yd)
         tk.Entry(self, width=3, textvariable=self.del_event_var).grid(sticky=tk.EW, row=3, column=4, padx=xd, pady=yd)
 
-
         self.make_up()
 
     def add_row(self):

@@ -1,7 +1,7 @@
 try:
-    import os, sys, datetime, logging, webbrowser
+    import os, sys, datetime, logging, shutil, webbrowser
 except:
-    print("ImportERROR: Missing fundamental packages (required: os, sys, datetime, logging, webbrowser).")
+    print("ImportERROR: Missing fundamental packages (required: os, sys, datetime, shutil, logging, webbrowser).")
 try:
     import fGlobal as fGl
 except:
