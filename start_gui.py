@@ -14,8 +14,8 @@ except:
     pass
 
 
-class MasterGUI(tk.Frame):
-    # master GUI for all modules
+class ParentGUI(tk.Frame):
+    # parent GUI for all modules
     @log_actions
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
@@ -90,4 +90,4 @@ class MasterGUI(tk.Frame):
 
 
 if __name__ == '__main__':
-    MasterGUI().mainloop()
+    ParentGUI().mainloop()
